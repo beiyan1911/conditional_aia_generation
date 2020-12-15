@@ -28,8 +28,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--epoch_num', default=2000, type=int, help='# total epoch num')
     parser.add_argument('--num_workers', default=8, type=int, help='# threads for loading data')
-    parser.add_argument('--batch_size', default=8, type=int, help='batch size')
-    parser.add_argument('--resume', default=True, help='continue training: True or False')
+    parser.add_argument('--batch_size', default=4, type=int, help='batch size')
+    parser.add_argument('--resume', default=False, help='continue training: True or False')
     parser.add_argument('--resume_count', type=int, default=2, help='when resume,from which count to epoch')
     parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate for adam')
     parser.add_argument('--save_valid_img', default=True, help='save image when run valid datasets?')

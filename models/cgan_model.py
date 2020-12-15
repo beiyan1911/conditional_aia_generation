@@ -1,8 +1,9 @@
 import numpy as np
 import torch
-from models.simple_net import CNN, UNet
+from models.simple_net import UNet
+from models.unet3d import UNet3D
 from models.networks import NLayerDiscriminator
-from models.net_utils import TVLoss, init_weights
+from models.net_utils import init_weights
 from utils.him import tensor2np
 from .base_model import BaseModel
 
@@ -19,7 +20,8 @@ class CGANModel(BaseModel):
         else:
             self.model_names = ['G']
 
-        self.netG = UNet(3, 1,n_feat=16).to(self.device)
+        # self.netG = UNet(3, 1,n_feat=16).to(self.device)
+        self.netG = UNet3D(n_feat=16).to(self.device)
 
         init_weights(self.netG)
 
