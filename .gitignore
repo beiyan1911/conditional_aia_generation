@@ -2,7 +2,7 @@
 # custom start
 preprocess/*
 other/*
-
+.idea/*
 # custom end
 __pycache__/
 *.py[cod]

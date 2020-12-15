@@ -39,10 +39,7 @@ class BaseModel(ABC):
         """
         if self.isTrain:
             self.schedulers = [net_utils.get_scheduler(optimizer, opt) for optimizer in self.optimizers]
-        if not self.isTrain or opt.resume:
-            load_prefix = 'epoch_%s' % opt.epoch
-            self.load_networks(load_prefix)
-        self.print_networks()
+        # self.print_networks()
 
     @abstractmethod
     def test(self):
@@ -92,10 +89,7 @@ class BaseModel(ABC):
                 save_path = os.path.join(self.config.checkpoints_dir, save_filename)
                 net = getattr(self, 'net' + name)
 
-                if self.config.gpu_num > 0 and torch.cuda.is_available():
-                    torch.save(net.module.state_dict(), save_path)
-                else:
-                    torch.save(net.state_dict(), save_path)
+                torch.save(net.state_dict(), save_path)
         print('save epoch %d models to file !' % epoch)
 
     def load_networks(self, epoch):
@@ -106,13 +100,11 @@ class BaseModel(ABC):
         """
         for name in self.model_names:
             if isinstance(name, str):
-                load_filename = '%s_net_%s.pth' % (epoch, name)
+                load_filename = 'epoch_%d_net_%s.pth' % (epoch, name)
                 load_path = os.path.join(self.config.checkpoints_dir, load_filename)
                 if not os.path.exists(load_path):
                     continue
                 net = getattr(self, 'net' + name)
-                if isinstance(net, torch.nn.DataParallel):
-                    net = net.module
                 print('loading the models from %s' % load_path)
                 state_dict = torch.load(load_path, map_location=str(self.device))
                 if hasattr(state_dict, '_metadata'):

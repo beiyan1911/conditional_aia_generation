@@ -19,7 +19,7 @@ class CGANModel(BaseModel):
         else:
             self.model_names = ['G']
 
-        self.netG = UNet(3, 1).to(self.device)
+        self.netG = UNet(3, 1,n_feat=16).to(self.device)
 
         init_weights(self.netG)
 
