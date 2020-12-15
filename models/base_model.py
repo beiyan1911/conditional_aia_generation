@@ -44,9 +44,9 @@ class BaseModel(ABC):
             self.load_networks(load_prefix)
         self.print_networks()
 
+    @abstractmethod
     def test(self):
-        with torch.no_grad():
-            self.forward()
+        pass
 
     def get_lr(self):
         lr = self.optimizers[0].param_groups[0]['lr']

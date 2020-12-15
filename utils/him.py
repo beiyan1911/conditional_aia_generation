@@ -7,20 +7,20 @@ import numpy as np
 import pandas as pd
 import torch
 from collections import OrderedDict
-# from imageio import imsave
 from torch.utils.tensorboard import SummaryWriter
 
-# todo: 解决mac 保存报错，详细原因？
-# os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 from matplotlib import pyplot as plt
 
 
 def count_parameters_in_MB(model):
     return np.sum(np.prod(v.size()) for v in model.parameters()) / 1e6
 
+
 def zscore2(im):
     im = (im - np.median(im)) / im.std()
     return im
+
+
 def imnorm(im, mx=0, mi=0):
     #   图像最大最小归一化 0-1
     if mx != 0 and mi != 0:
@@ -36,6 +36,8 @@ def imnorm(im, mx=0, mi=0):
     im2[arr0] = 0
 
     return im2
+
+
 def removenan(im, key=0):
     """
     remove NAN and INF in an image

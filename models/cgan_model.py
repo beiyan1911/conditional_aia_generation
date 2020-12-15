@@ -67,6 +67,11 @@ class CGANModel(BaseModel):
     def forward(self):
         self.fake_B = self.netG(self.real_A, self.condition)
 
+    def test(self):
+        with torch.no_grad():
+            self.forward()
+            self.loss_G_sup = self.supLoss(self.fake_B, self.real_B) * self.config.lambda_L1
+
     def optimize_parameters(self):
         self.forward()  # compute fake images: G(A)
         # ************************    update D    ***********************
@@ -97,7 +102,7 @@ class CGANModel(BaseModel):
         # self.set_requires_grad(self.netD, False)  # D requires no gradients when optimizing G
         self.optimizer_G.zero_grad()  # set G's gradients to zero
 
-        fake_AB = torch.cat((self.real_A, self.fake_B.detach(),c_pad), 1)
+        fake_AB = torch.cat((self.real_A, self.fake_B.detach(), c_pad), 1)
         pred_fake = self.netD(fake_AB)
         self.loss_G_GAN = self.criterionGAN(pred_fake, self.True_.expand_as(pred_fake))
 
