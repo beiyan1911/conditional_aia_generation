@@ -5,6 +5,7 @@ from models.networks import NLayerDiscriminator
 from models.net_utils import init_weights
 from utils.him import tensor2np
 from .base_model import BaseModel
+from .net_attention import MultiAttResnet
 
 
 class CGANModel(BaseModel):
@@ -19,7 +20,8 @@ class CGANModel(BaseModel):
         else:
             self.model_names = ['G']
 
-        self.netG = UNet3D(input_dim=5, out_channels=1, n_feat=4).to(self.device)
+        # self.netG = UNet3D(input_dim=5, out_channels=1, n_feat=4).to(self.device)
+        self.netG = MultiAttResnet(in_dims=5).to(self.device)
 
         init_weights(self.netG)
 
