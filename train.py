@@ -13,12 +13,12 @@ from imageio import imsave
 from datasets import AIADataset
 from utils.him import SummaryHelper
 from models import create_model
-from utils.him import calculate_mean_loss, zscore2, imnorm
+from utils.him import calculate_mean_loss, zscore2, imnorm, combine_per_batch_out, fitswrite
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='conditional aia generation')
     parser.add_argument('--isTrain', default=True, help='training model or test')
-    parser.add_argument('--gpu_num', '-g', type=int, default=1, help='Num. of GPUs')
+    parser.add_argument('--gpu_num', '-g', type=int, default=0, help='Num. of GPUs')
     parser.add_argument('--train_path', default='../datasets/AIA_CG/train')
     parser.add_argument('--valid_path', default='../datasets/AIA_CG/valid')
     parser.add_argument('--output_root', type=str, default='../outputs/AIA_CG/')
@@ -26,7 +26,7 @@ if __name__ == '__main__':
                         help='which epoch to load?')
     parser.add_argument('--samples_dir', type=str, default='../outputs/AIA_CG/samples/', help='which epoch to load?')
 
-    parser.add_argument('--epoch_num', default=2000, type=int, help='# total epoch num')
+    parser.add_argument('--epoch_num', default=500, type=int, help='# total epoch num')
     parser.add_argument('--num_workers', default=8, type=int, help='# threads for loading data')
     parser.add_argument('--batch_size', default=4, type=int, help='batch size')
     parser.add_argument('--resume', default=False, help='continue training: True or False')
@@ -119,35 +119,38 @@ if __name__ == '__main__':
             # 计算测试集平均loss
             # valid loss
             model.eval()
-            valid_outputs = []  # N C W H
+            total_valid_outputs = []  # N C W H
+
             v_l1_list, v_l2_list, v_l3_list = [], [], []
             for v_i, v_data in enumerate(valid_loader):
                 # 生成第一组结果
                 model.set_input(v_data, label_idx=0, keep_in=False)
                 model.test()
                 v_l1_list.append(model.get_current_losses())
-                valid_outputs.append(model.get_current_np_outputs())
+                v_l1_out = model.get_current_np_outputs()
                 # 生成第二组结果
                 model.set_input(v_data, label_idx=1, keep_in=True)
                 model.test()
                 v_l2_list.append(model.get_current_losses())
-                valid_outputs.append(model.get_current_np_outputs())
+                v_l2_out = model.get_current_np_outputs()
                 # 生成第三组结果
-                model.set_input(v_data, label_idx=1, keep_in=True)
+                model.set_input(v_data, label_idx=2, keep_in=True)
                 model.test()
                 v_l3_list.append(model.get_current_losses())
-                valid_outputs.append(model.get_current_np_outputs())
+                v_l3_out = model.get_current_np_outputs()
+                total_valid_outputs.append(combine_per_batch_out([v_l1_out, v_l2_out, v_l3_out]))
 
             model.train()
             valid_mean_loss = calculate_mean_loss(
                 [calculate_mean_loss(v_l1_list), calculate_mean_loss(v_l2_list), calculate_mean_loss(v_l3_list)])
 
             print('mean loss', 'train:', train_mean_loss, 'valid', valid_mean_loss)
-            valid_outputs = np.concatenate(valid_outputs, axis=0)
+            total_valid_outputs = np.concatenate(total_valid_outputs, axis=0)
             # save sample to file
-            for i in range(len(valid_outputs)):
-                saving_img = np.hstack([zscore2(_) for _ in valid_outputs[i]])
+            for i in range(len(total_valid_outputs)):
+                saving_img = np.hstack([zscore2(_) for _ in total_valid_outputs[i]])
                 saving_img = np.array(imnorm(saving_img) * 255.0, dtype=np.uint8)
+                fitswrite('%s/epoch_%d__%d.fits' % (args.samples_dir, epoch, i), total_valid_outputs[i])
                 imsave('%s/epoch_%d__%d.jpg' % (args.samples_dir, epoch, i), saving_img)
 
         # **************************    save model    ************************** #

@@ -60,7 +60,7 @@ class BaseModel(ABC):
         # print('learning rate = %.7f' % lr)
 
     # 返回输出结果
-    def get_current_np_outputs(self, only_out=False):
+    def get_current_np_outputs(self):
         pass
 
     # 返回 loss names

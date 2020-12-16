@@ -119,19 +119,13 @@ class CGANModel(BaseModel):
 
         self.optimizer_G.step()
 
-    def get_current_np_outputs(self, only_out=False):
+    def get_current_np_outputs(self):
         """
         return 4 dims data. [N,C,W,H]
         """
-
-        # consist of inputs and outputs
-        if only_out:
-            res = tensor2np(self.fake_B)
-        else:
-            label = tensor2np(self.real_B)
-            predict = tensor2np(self.fake_B)
-            diff = np.abs(label - predict)
-            inputs = tensor2np(self.real_A[:, 0:1])
-            res = np.concatenate([inputs, label, predict, diff], axis=1)
+        label = tensor2np(self.real_B)
+        predict = tensor2np(self.fake_B)
+        inputs = tensor2np(self.real_A)
+        res = np.concatenate([inputs, label, predict], axis=1)
 
         return res

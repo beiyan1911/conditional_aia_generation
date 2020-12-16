@@ -124,49 +124,6 @@ def im_auto_clip(im):
     return np.clip(im, mi, mx)
 
 
-def make_grid(array, nrow=8, padding=2, pad_value=0, log2=False, auto_clip=False):
-    assert len(np.shape(array)) == 4
-    num, dim, h, w = np.shape(array)
-    ncol = int(num // nrow)
-    real_num = ncol * nrow
-    if dim == 1:  # 灰度图
-        result = np.ones((nrow * h + (nrow + 1) * padding, ncol * h + (ncol + 1) * padding), dtype=np.float32) * float(
-            pad_value)
-
-        for i in range(real_num):
-            trow = i // ncol
-            tcol = i % ncol
-
-            img = array[i, 0]
-
-            if log2:
-                img = log2_img(img)
-
-            if auto_clip:
-                img = im_auto_clip(img)
-
-            _min = np.min(img)
-            _max = np.max(img)
-            img = (img - _min) / (_max - _min)
-
-            result[(trow + 1) * padding + trow * h:(trow + 1) * padding + (trow + 1) * h,
-            (tcol + 1) * padding + tcol * w:(tcol + 1) * padding + (tcol + 1) * w] = img
-
-    else:
-        pass
-
-    result = np.array(result * 255.0, dtype=np.uint8)
-    return result
-
-
-def write_grid_images(images, row, file_name, log2=False, auto_clip=False):
-    # image_outputs = [images.expand(-1, 3, -1, -1) for images in image_outputs]  # expand gray-scale images to 3 channels
-
-    result = make_grid(images, nrow=row, padding=10, pad_value=1, log2=log2, auto_clip=auto_clip)
-
-    imsave(file_name, result)
-
-
 # 预测值 和 标签 画45度线
 def line_45(fake_B, real_B, title=''):
     # 标签值得最大最小值
@@ -373,8 +330,8 @@ class DictStack(object):
             return self.loss_stack
 
 
-def count_parameters_in_MB(model):
-    return np.sum(np.prod(v.size()) for v in model.parameters()) / 1e6
+def combine_per_batch_out(outout_list):
+    return np.concatenate([outout_list[0], outout_list[1][:, -2:], outout_list[2][:, -2:]], axis=1)
 
 
 def save_networks(model, save_path, cpu=True):
