@@ -18,7 +18,7 @@ from utils.him import calculate_mean_loss, zscore2, imnorm, fitswrite
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='conditional aia generation')
     parser.add_argument('--isTrain', default=True, help='training model or test')
-    parser.add_argument('--gpu_num', '-g', type=int, default=0, help='Num. of GPUs')
+    parser.add_argument('--gpu_num', '-g', type=int, default=1, help='Num. of GPUs')
     parser.add_argument('--train_path', default='../datasets/AIA_CG/train')
     parser.add_argument('--valid_path', default='../datasets/AIA_CG/valid')
     parser.add_argument('--output_root', type=str, default='../outputs/AIA_CG/')
@@ -27,11 +27,11 @@ if __name__ == '__main__':
     parser.add_argument('--samples_dir', type=str, default='../outputs/AIA_CG/samples/', help='which epoch to load?')
 
     parser.add_argument('--epoch_num', default=500, type=int, help='# total epoch num')
-    parser.add_argument('--num_workers', default=0, type=int, help='# threads for loading data')
-    parser.add_argument('--batch_size', default=1, type=int, help='batch size')
+    parser.add_argument('--num_workers', default=8, type=int, help='# threads for loading data')
+    parser.add_argument('--batch_size', default=2, type=int, help='batch size')
     parser.add_argument('--resume', default=False, help='continue training: True or False')
     parser.add_argument('--resume_count', type=int, default=2, help='when resume,from which count to epoch')
-    parser.add_argument('--lr', type=float, default=0.001, help='initial learning rate for adam')
+    parser.add_argument('--lr', type=float, default=0.01, help='initial learning rate for adam')
     parser.add_argument('--save_valid_img', default=True, help='save image when run valid datasets?')
     parser.add_argument('--beta1', type=float, default=0.5, help='momentum term of adam')
     parser.add_argument('--lambda_L1', type=float, default=50.0, help='')
@@ -39,8 +39,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--save_loss_freq', type=int, default=1, help='frequency of saving the loss results')
     parser.add_argument('--save_model_freq', type=int, default=1, help='frequency of saving checkpoints')
-    parser.add_argument('--lr_policy', type=str, default='cosine',
-                        help='learning rate policy. [linear | step | plateau | cosine]')
+
 
     args = parser.parse_args()
     args.device = torch.device("cuda" if args.gpu_num > 0 else "cpu")
