@@ -1,7 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from collections import OrderedDict
-
+import torch.optim as optim
 import torch
 from models import net_utils
 
@@ -22,7 +22,7 @@ class BaseModel(ABC):
 
     # 设置输入数据
     @abstractmethod
-    def set_input(self):
+    def set_input(self, input):
         pass
 
     @abstractmethod
@@ -35,11 +35,16 @@ class BaseModel(ABC):
 
     def setup(self, opt):
         """
-        Load and print models; create schedulers
+        create schedulers
         """
         if self.isTrain:
-            self.schedulers = [net_utils.get_scheduler(optimizer, opt) for optimizer in self.optimizers]
-        # self.print_networks()
+            self.schedulers = [optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=opt.epoch_num, eta_min=1e-6) for
+                               optimizer in self.optimizers]
+
+            if opt.resume:
+                for per_scheduler in self.schedulers:
+                    per_scheduler.step(opt.resume_count)
+                print('re-adjust learning rate')
 
     @abstractmethod
     def test(self):

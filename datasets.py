@@ -11,14 +11,14 @@ class AIADataset(Dataset):
 
     def __init__(self, dataroot):
         self.paths = sorted(glob(os.path.join(dataroot, '*.fits')))
-        # self.wave = [171, 193, 211, 335, 131, 94]
+        # ['0211', '0094', '0335', '0193', '0131', '0171']
 
     def __getitem__(self, index):
         path = self.paths[index]
         name = os.path.basename(path)
         fit_data = fitsread(path)[0]
-        in_idx = [0, 1, 2]
-        out_idx = [3, 4, 5]
+        in_idx = [0, 2, 3, 4, 5]
+        out_idx = [1]
         inputs = np.stack([fit_data[i] for i in in_idx])
         outputs = np.stack([fit_data[i] for i in out_idx])
 

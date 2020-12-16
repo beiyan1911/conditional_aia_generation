@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-from models.simple_net import UNet
 from models.unet3d import UNet3D
 from models.networks import NLayerDiscriminator
 from models.net_utils import init_weights
@@ -20,20 +19,12 @@ class CGANModel(BaseModel):
         else:
             self.model_names = ['G']
 
-        # self.netG = UNet(3, 1,n_feat=16).to(self.device)
-        self.netG = UNet3D(n_feat=16).to(self.device)
+        self.netG = UNet3D(input_dim=5, out_channels=1, n_feat=4).to(self.device)
 
         init_weights(self.netG)
 
-        self.const_conditions = [np.tile(np.array([[1, 0, 0]], dtype=np.float32), [self.config.batch_size, 1]),
-                                 np.tile(np.array([[0, 1, 0]], dtype=np.float32), [self.config.batch_size, 1]),
-                                 np.tile(np.array([[0, 0, 1]], dtype=np.float32), [self.config.batch_size, 1])
-                                 ]
-
         if self.isTrain:
-            # L1 = torch.nn.L1Loss() , L2 = torch.nn.MSELoss()
-
-            self.netD = NLayerDiscriminator(input_nc=7, ndf=8, n_layers=3).to(self.device)
+            self.netD = NLayerDiscriminator(input_nc=6, ndf=8, n_layers=3).to(self.device)
             init_weights(self.netD)
 
             # self.criterionGAN = torch.nn.MSELoss()
@@ -49,25 +40,13 @@ class CGANModel(BaseModel):
             self.optimizers.append(self.optimizer_G)
             self.optimizers.append(self.optimizer_D)
 
-    def set_input(self, input, label_idx=0, keep_in=False):
-        """
-        设置输入数据
-        :param input:
-        :param label_idx: label index
-        :param keep_in: 是否保持输入数据不变，更新label
-        :return:
-        """
+    def set_input(self, input):
 
-        if not keep_in:
-            self.real_A = input['inputs'].to(self.device)
-
-        if 'outputs' in input.keys():
-            self.real_B = input['outputs'][:, label_idx:label_idx + 1].to(self.device)
-
-        self.condition = torch.from_numpy(self.const_conditions[label_idx]).to(self.device)
+        self.real_A = input['inputs'].to(self.device)
+        self.real_B = input['outputs'].to(self.device)
 
     def forward(self):
-        self.fake_B = self.netG(self.real_A, self.condition)
+        self.fake_B = self.netG(self.real_A)
 
     def test(self):
         with torch.no_grad():
@@ -81,16 +60,14 @@ class CGANModel(BaseModel):
         self.optimizer_D.zero_grad()  # set D's gradients to zero
 
         # Fake
-        W = self.fake_B.size(2)
-        c_pad = self.condition.unsqueeze(2).unsqueeze(3).repeat(1, 1, W, W)
-        fake_AB = torch.cat((self.real_A, self.fake_B.detach(), c_pad), 1)
+        fake_AB = torch.cat([self.real_A, self.fake_B.detach()], 1)
         pred_fake = self.netD(fake_AB)
         self.loss_D_fake = self.criterionGAN(pred_fake, self.False_.expand_as(pred_fake))
 
         self.loss_D_fake.backward()
 
         # Real
-        real_AB = torch.cat((self.real_A, self.real_B, c_pad), 1)
+        real_AB = torch.cat([self.real_A, self.real_B], 1)
         pred_real = self.netD(real_AB)
         self.loss_D_real = self.criterionGAN(pred_real, self.True_.expand_as(pred_real))
 
@@ -104,7 +81,7 @@ class CGANModel(BaseModel):
         # self.set_requires_grad(self.netD, False)  # D requires no gradients when optimizing G
         self.optimizer_G.zero_grad()  # set G's gradients to zero
 
-        fake_AB = torch.cat((self.real_A, self.fake_B.detach(), c_pad), 1)
+        fake_AB = torch.cat([self.real_A, self.fake_B.detach()], 1)
         pred_fake = self.netD(fake_AB)
         self.loss_G_GAN = self.criterionGAN(pred_fake, self.True_.expand_as(pred_fake))
 
