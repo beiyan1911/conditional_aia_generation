@@ -191,16 +191,11 @@ class MultiAttResnet(nn.Module):
         base_features = self.base_block(x)
         att_features = self.att_blocks(base_features)
 
-        self.extra_out = att_features[0, :5]
-
         res_features = self.res_blocks(base_features)
 
         out = torch.cat([base_features, att_features, res_features], dim=1)
         out = self.out_blocks(out)
         return out
-
-    def get_extra_outputs(self):
-        return self.extra_out
 
 
 class NLayerDiscriminator(nn.Module):
