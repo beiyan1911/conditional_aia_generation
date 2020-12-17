@@ -26,7 +26,7 @@ class CGANModel(BaseModel):
         init_weights(self.netG)
 
         if self.isTrain:
-            self.netD = NLayerDiscriminator(input_nc=6, ndf=8, n_layers=3).to(self.device)
+            self.netD = NLayerDiscriminator(input_nc=6, ndf=16, n_layers=3).to(self.device)
             init_weights(self.netD)
 
             # self.criterionGAN = torch.nn.MSELoss()
