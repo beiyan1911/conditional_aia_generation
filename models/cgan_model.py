@@ -20,8 +20,8 @@ class CGANModel(BaseModel):
         else:
             self.model_names = ['G']
 
-        # self.netG = UNet3D(input_dim=5, out_channels=1, n_feat=4).to(self.device)
-        self.netG = MultiAttResnet(in_dims=5).to(self.device)
+        self.netG = UNet3D(input_dim=5, out_channels=1, n_feat=24).to(self.device)
+        # self.netG = MultiAttResnet(in_dims=5).to(self.device)
 
         init_weights(self.netG)
 

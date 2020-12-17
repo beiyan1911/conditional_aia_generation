@@ -31,7 +31,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', default=2, type=int, help='batch size')
     parser.add_argument('--resume', default=False, help='continue training: True or False')
     parser.add_argument('--resume_count', type=int, default=2, help='when resume,from which count to epoch')
-    parser.add_argument('--lr', type=float, default=0.005, help='initial learning rate for adam')
+    parser.add_argument('--lr', type=float, default=0.0005, help='initial learning rate for adam')
     parser.add_argument('--save_valid_img', default=True, help='save image when run valid datasets?')
     parser.add_argument('--beta1', type=float, default=0.5, help='momentum term of adam')
     parser.add_argument('--lambda_L1', type=float, default=50.0, help='')
